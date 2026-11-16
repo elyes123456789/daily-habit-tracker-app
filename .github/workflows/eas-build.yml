@@ -1,7 +1,11 @@
 name: EAS mobile build
 
-# Starts an Android and/or iOS build on Expo Application Services. Manual only: builds use your
-# Expo account's build quota. Nothing is submitted to the App Store or Google Play.
+# Starts a build on Expo Application Services. Nothing is submitted to the App Store or Google Play.
+#   - Automatically: an Android preview APK when a push to main changes the app itself (the paths
+#     below). Docs, tests and workflow changes do not start a build.
+#   - Manually: any platform and profile from the Actions tab.
+# Every build uses your Expo account's build quota. To stop automatic builds, delete the `push`
+# block.
 #
 # Before the first run:
 #   1. Link the project once on your machine: npx eas-cli@latest init
@@ -9,6 +13,17 @@ name: EAS mobile build
 #   2. Create an access token at https://expo.dev/settings/access-tokens and save it as the
 #      repository secret EXPO_TOKEN.
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - '!src/**/*.test.*'
+      - 'assets/**'
+      - 'app.json'
+      - 'app.config.js'
+      - 'eas.json'
+      - 'package.json'
+      - 'package-lock.json'
   workflow_dispatch:
     inputs:
       platform:
@@ -25,9 +40,19 @@ on:
 permissions:
   contents: read
 
+# A newer push replaces a run that has not submitted its build yet.
+concurrency:
+  group: eas-build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Inputs are empty on a push, so these are the automatic build's settings.
+  PLATFORM: ${{ inputs.platform || 'android' }}
+  PROFILE: ${{ inputs.profile || 'preview' }}
+
 jobs:
   build:
-    name: eas build (${{ inputs.platform }}, ${{ inputs.profile }})
+    name: eas build (${{ inputs.platform || 'android' }}, ${{ inputs.profile || 'preview' }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -51,6 +76,3 @@ jobs:
           fi
       - name: Start the build
         run: npx eas-cli@latest build --platform "$PLATFORM" --profile "$PROFILE" --non-interactive --no-wait
-        env:
-          PLATFORM: ${{ inputs.platform }}
-          PROFILE: ${{ inputs.profile }}

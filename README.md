@@ -132,7 +132,7 @@ Repository: https://github.com/elyes123456789/daily-habit-tracker-app (public, d
 | --- | --- | --- |
 | `ci.yml` | Pull requests, pushes to `main`, manual | `npm ci`, Expo dependency check, Expo Doctor, lint, type check, Jest, production web export, then Playwright tests in a second job. Read-only token, no secrets. |
 | `deploy-web.yml` | Pushes to `main`, manual | Builds the web app for its Pages path and deploys it with the official GitHub Pages actions. Skipped unless the `ENABLE_PAGES` variable is `true` (below). |
-| `eas-build.yml` | Manual only | Starts an EAS build for Android and/or iOS with the chosen profile. Fails with a clear message until EAS is set up (below). |
+| `eas-build.yml` | Pushes to `main` that change the app, manual | Starts an EAS build: automatically an Android preview APK, or manually any platform and profile. Fails with a clear message until EAS is set up (below). |
 
 ### GitHub Pages deployment
 
@@ -155,7 +155,9 @@ EAS is set up: the app is linked to the Expo project [`@elyesghouma/daily-habit-
 
 One build has been run so far: an Android `preview` APK on 2026-11-16, which compiled successfully ([build page](https://expo.dev/accounts/elyesghouma/projects/daily-habit-tracker-app/builds/3e696c9d-c917-4350-921d-eca4a809702b)). It has not been installed or run on a device. No iOS build has been made.
 
-To build, run **Actions → EAS mobile build → Run workflow** and choose a platform and profile, or locally `npx eas-cli@latest build --platform android --profile preview`.
+**Builds start automatically from GitHub Actions.** When a push to `main` changes the app itself (`src/` other than tests, `assets/`, `app.json`, `app.config.js`, `eas.json`, `package.json` or `package-lock.json`), the `eas-build.yml` workflow starts an Android `preview` build on EAS. Changes to documentation, tests or workflows do not start one. The workflow only submits the build; the APK appears on the [project's builds page](https://expo.dev/accounts/elyesghouma/projects/daily-habit-tracker-app/builds) when EAS finishes, which on the free plan can take an hour including queueing. Each build counts against the Expo plan's monthly quota; to stop automatic builds, delete the `push` block in the workflow.
+
+To build by hand, run **Actions → EAS mobile build → Run workflow** and choose a platform and profile, or locally `npx eas-cli@latest build --platform android --profile preview`. iOS is manual only.
 
 To set this up on a fork or another account: `npx eas-cli@latest login`, change `owner` in `app.json`, run `npx eas-cli@latest init`, then create a token at **expo.dev → Account settings → Access tokens** and save it as the repository secret `EXPO_TOKEN`.
 
