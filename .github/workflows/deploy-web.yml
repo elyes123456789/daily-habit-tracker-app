@@ -1,0 +1,64 @@
+name: Deploy web to GitHub Pages
+
+# Publishes the Expo web/PWA build to GitHub Pages.
+#
+# It is switched off until you opt in, because GitHub Pages for a private repository needs a paid
+# plan and a published site is public even when the repository is private.
+# To enable: Settings > Pages > Source: "GitHub Actions", then
+# Settings > Secrets and variables > Actions > Variables > ENABLE_PAGES = true.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    # Never from pull requests or other branches, and only once Pages has been switched on.
+    if: github.ref == 'refs/heads/main' && vars.ENABLE_PAGES == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - id: pages
+        uses: actions/configure-pages@v6
+      - name: Export the site for its Pages path
+        run: npm run build:web
+        env:
+          # "/daily-habit-tracker-app" for a project site, empty for a custom domain.
+          WEB_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+      - name: Use the app's not-found page for unknown URLs
+        run: cp "dist/+not-found.html" dist/404.html
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

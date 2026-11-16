@@ -1,32 +1,24 @@
 import { NativeTabs } from 'expo-router/native-tabs';
-import { useColorScheme } from 'react-native';
 
-import { Colors } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 
-export default function AppTabs() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+import { NAV_ITEMS } from './nav-items';
 
+/** The platform's own tab bar on iOS and Android. */
+export function AppTabs() {
+  const { colors } = useTheme();
   return (
     <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
+      backgroundColor={colors.surface}
+      indicatorColor={colors.primarySoft}
+      tintColor={colors.primary}
       labelStyle={{ selected: { color: colors.text } }}>
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
+      {NAV_ITEMS.map((item) => (
+        <NativeTabs.Trigger key={item.name} name={item.name}>
+          <NativeTabs.Trigger.Label>{item.label}</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Icon sf={item.sf} md={item.md} />
+        </NativeTabs.Trigger>
+      ))}
     </NativeTabs>
   );
 }

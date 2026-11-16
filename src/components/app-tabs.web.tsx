@@ -1,115 +1,72 @@
-import {
-  Tabs,
-  TabList,
-  TabTrigger,
-  TabSlot,
-  TabTriggerSlotProps,
-  TabListProps,
-} from 'expo-router/ui';
-import { SymbolView } from 'expo-symbols';
-import { Pressable, useColorScheme, View, StyleSheet } from 'react-native';
+import { TabList, TabSlot, TabTrigger, type TabTriggerSlotProps, Tabs } from 'expo-router/ui';
+import { Pressable, type PressableProps, StyleSheet, View, type ViewProps } from 'react-native';
 
-import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useLayout } from '@/hooks/use-layout';
+import { useTheme } from '@/hooks/use-theme';
+import { space } from '@/theme';
 
-import { ExternalLink } from './external-link';
-import { ThemedText } from './themed-text';
-import { ThemedView } from './themed-view';
+import { NAV_ITEMS } from './nav-items';
+import { Icon, type IconName, Txt } from './ui';
 
-export default function AppTabs() {
+/** Web: a bottom tab bar on narrow screens. On wide screens the sidebar in `shell.web` navigates instead. */
+export function AppTabs() {
   return (
     <Tabs>
-      <TabSlot style={{ height: '100%' }} />
+      <TabSlot style={{ flex: 1 }} />
       <TabList asChild>
-        <CustomTabList>
-          <TabTrigger name="home" href="/" asChild>
-            <TabButton>Home</TabButton>
-          </TabTrigger>
-          <TabTrigger name="explore" href="/explore" asChild>
-            <TabButton>Explore</TabButton>
-          </TabTrigger>
-        </CustomTabList>
+        <TabBar>
+          {NAV_ITEMS.map((item) => (
+            <TabTrigger key={item.name} name={item.name} href={item.href} asChild>
+              <TabButton icon={item.icon} label={item.label} />
+            </TabTrigger>
+          ))}
+        </TabBar>
       </TabList>
     </Tabs>
   );
 }
 
-export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps) {
+/**
+ * `asChild` merges styles by object spread, which turns a style array into numeric keys and
+ * crashes on web. So slot children set their own style and drop the merged one.
+ */
+function TabBar({ children }: ViewProps) {
+  const { colors } = useTheme();
+  const { isWide } = useLayout();
   return (
-    <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
-      <ThemedView
-        type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
-        style={styles.tabButtonView}>
-        <ThemedText type="small" themeColor={isFocused ? 'text' : 'textSecondary'}>
-          {children}
-        </ThemedText>
-      </ThemedView>
-    </Pressable>
-  );
-}
-
-export function CustomTabList(props: TabListProps) {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
-
-  return (
-    <View {...props} style={styles.tabListContainer}>
-      <ThemedView type="backgroundElement" style={styles.innerContainer}>
-        <ThemedText type="smallBold" style={styles.brandText}>
-          Expo Starter
-        </ThemedText>
-
-        {props.children}
-
-        <ExternalLink href="https://docs.expo.dev" asChild>
-          <Pressable style={styles.externalPressable}>
-            <ThemedText type="link">Docs</ThemedText>
-            <SymbolView
-              tintColor={colors.text}
-              name={{ ios: 'arrow.up.right.square', web: 'link' }}
-              size={12}
-            />
-          </Pressable>
-        </ExternalLink>
-      </ThemedView>
+    <View
+      accessibilityRole="tablist"
+      style={[
+        styles.bar,
+        { backgroundColor: colors.surface, borderTopColor: colors.border },
+        isWide && { display: 'none' },
+      ]}>
+      {children}
     </View>
   );
 }
 
+function TabButton({ icon, label, isFocused, ...props }: TabTriggerSlotProps & { icon: IconName; label: string }) {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      {...(props as PressableProps)}
+      accessibilityRole="tab"
+      accessibilityLabel={label}
+      aria-selected={!!isFocused}
+      style={styles.tab}>
+      <View style={[styles.pill, isFocused && { backgroundColor: colors.primarySoft }]}>
+        <Icon name={icon} size={20} color={isFocused ? colors.primary : colors.textMuted} />
+      </View>
+      <Txt variant="small" style={{ fontSize: 12, lineHeight: 16, fontWeight: '600' }} color={isFocused ? 'text' : 'textMuted'}>
+        {label}
+      </Txt>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
-  tabListContainer: {
-    position: 'absolute',
-    width: '100%',
-    padding: Spacing.three,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  innerContainer: {
-    paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.five,
-    borderRadius: Spacing.five,
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexGrow: 1,
-    gap: Spacing.two,
-    maxWidth: MaxContentWidth,
-  },
-  brandText: {
-    marginRight: 'auto',
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-  tabButtonView: {
-    paddingVertical: Spacing.one,
-    paddingHorizontal: Spacing.three,
-    borderRadius: Spacing.three,
-  },
-  externalPressable: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: Spacing.one,
-    marginLeft: Spacing.three,
-  },
+  bar: { flexDirection: 'row', borderTopWidth: 1, paddingBottom: 'env(safe-area-inset-bottom)' as never },
+  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2, minHeight: 60, paddingVertical: space.sm },
+  pill: { paddingHorizontal: space.lg, paddingVertical: 4, borderRadius: 999 },
 });

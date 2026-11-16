@@ -1,14 +1,23 @@
-/**
- * Learn more about light and dark modes:
- * https://docs.expo.dev/guides/color-schemes/
- */
+import { useSyncExternalStore } from 'react';
+import { useColorScheme } from 'react-native';
 
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useStore } from '@/data/store';
+import { type Palette, type Scheme, palettes } from '@/theme';
 
-export function useTheme() {
-  const scheme = useColorScheme();
-  const theme = scheme === 'dark' ? 'dark' : 'light';
+/** False while rendering static HTML and hydrating it, true afterwards; keeps static HTML and hydration identical on web. */
+export function useHydrated(): boolean {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+}
 
-  return Colors[theme];
+export function useTheme(): { colors: Palette; scheme: Scheme } {
+  const system = useColorScheme();
+  const hydrated = useHydrated();
+  const preference = useStore().data.settings.theme;
+  const scheme: Scheme =
+    preference === 'system' ? (hydrated && system === 'dark' ? 'dark' : 'light') : preference;
+  return { colors: palettes[scheme], scheme };
 }
