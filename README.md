@@ -151,7 +151,9 @@ Without Pages, `npm run build:web` produces a `dist/` folder that any static hos
 
 ### EAS builds
 
-EAS is set up: the app is linked to the Expo project [`@elyesghouma/daily-habit-tracker-app`](https://expo.dev/accounts/elyesghouma/projects/daily-habit-tracker-app) (`extra.eas.projectId` in `app.json`), and the `EXPO_TOKEN` repository secret holds an Expo access token. The token itself is never committed. No build has been started yet.
+EAS is set up: the app is linked to the Expo project [`@elyesghouma/daily-habit-tracker-app`](https://expo.dev/accounts/elyesghouma/projects/daily-habit-tracker-app) (`extra.eas.projectId` in `app.json`), and the `EXPO_TOKEN` repository secret holds an Expo access token. The token itself is never committed.
+
+One build has been run so far: an Android `preview` APK on 2026-11-16, which compiled successfully ([build page](https://expo.dev/accounts/elyesghouma/projects/daily-habit-tracker-app/builds/3e696c9d-c917-4350-921d-eca4a809702b)). It has not been installed or run on a device. No iOS build has been made.
 
 To build, run **Actions → EAS mobile build → Run workflow** and choose a platform and profile, or locally `npx eas-cli@latest build --platform android --profile preview`.
 
@@ -161,7 +163,7 @@ Profiles in `eas.json`: `development` (development client, internal distribution
 
 ## Known limitations
 
-- **Native apps were not run.** No Android emulator, iOS simulator or physical device was available where this was built, so native navigation, safe areas, notifications, and file sharing and import on Android and iOS are written against the SDK 58 APIs and type-checked, but untested on a device. Test on a device before relying on them.
+- **Native apps were not run.** No Android emulator, iOS simulator or physical device was available where this was built, so native navigation, safe areas, notifications, and file sharing and import on Android and iOS are written against the SDK 58 APIs and type-checked, but untested on a device. The Android app compiles on EAS, which shows it builds, not that it behaves correctly. Test on a device before relying on them.
 - **Web reminders need the app open** (see above).
 - **No sync between devices.** Use export and import.
 - **Web storage limits**: data lives in `localStorage`, which browsers may clear in private windows or when site data is cleared.
