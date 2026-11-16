@@ -2,6 +2,8 @@
 
 A calm, local-first habit tracker for Android, iOS and the desktop browser, built from one TypeScript codebase with Expo SDK 58, React Native and Expo Router.
 
+**Live web app:** https://elyes123456789.github.io/daily-habit-tracker-app/
+
 Create habits, choose the weekdays they belong to, check in each day in a couple of taps, and see your consistency over time. There is no account and no server: your data stays on the device.
 
 | Today (desktop) | Habit history (desktop) | Insights (desktop, dark) |
@@ -124,31 +126,32 @@ scripts/        Icon generator
 
 ## GitHub repository and CI
 
-The repository slug is `daily-habit-tracker-app`. Workflows live in `.github/workflows/`:
+Repository: https://github.com/elyes123456789/daily-habit-tracker-app (public, default branch `main`). Workflows live in `.github/workflows/`:
 
 | Workflow | Runs on | What it does |
 | --- | --- | --- |
 | `ci.yml` | Pull requests, pushes to `main`, manual | `npm ci`, Expo dependency check, Expo Doctor, lint, type check, Jest, production web export, then Playwright tests in a second job. Read-only token, no secrets. |
-| `deploy-web.yml` | Pushes to `main`, manual | Builds the web app for its Pages path and deploys it with the official GitHub Pages actions. **Skipped until you opt in** (below). |
+| `deploy-web.yml` | Pushes to `main`, manual | Builds the web app for its Pages path and deploys it with the official GitHub Pages actions. Skipped unless the `ENABLE_PAGES` variable is `true` (below). |
 | `eas-build.yml` | Manual only | Starts an EAS build for Android and/or iOS with the chosen profile. Fails with a clear message until EAS is set up (below). |
 
-### Enabling GitHub Pages deployment
+### GitHub Pages deployment
 
-The deploy workflow is off by default for two reasons: GitHub Pages on a **private** repository requires a paid GitHub plan, and a Pages site is **public on the internet even when the repository is private**. The app holds no data of yours (data lives in each visitor's browser), but the built app itself would be public.
+The web app is deployed at **https://elyes123456789.github.io/daily-habit-tracker-app/** and redeploys on every push to `main`. A Pages site is public on the internet. The app holds no data of yours (data lives in each visitor's browser), but anyone can open it.
 
-One-time setup:
+The deployed site was checked in a headless browser: first-run onboarding, creating a habit, checking in, persistence after a reload, refreshing on deep links (`/habits`, `/insights`, `/settings`, `/habit-form`), the manifest, the service worker and an offline reload all worked, and unknown addresses show the app's not-found page.
 
-1. **Settings → Pages → Build and deployment → Source**: choose **GitHub Actions**. If this option is unavailable, your plan does not include Pages for private repositories; leave the workflow off or use another static host.
-2. **Settings → Secrets and variables → Actions → Variables**: add a repository variable `ENABLE_PAGES` with the value `true`.
-3. Run **Actions → Deploy web to GitHub Pages → Run workflow**, or push to `main`.
+The deployment depends on two repository settings, both already in place:
 
-The site URL appears on the workflow run's *Deploy* job, under **Settings → Pages**, and in the repository's `github-pages` environment. For a project site it is `https://<account>.github.io/daily-habit-tracker-app/`. The workflow reads the base path from GitHub and builds for it, so links, refreshes on deep links and the service worker work under the sub-path. This was checked locally against a server that mimics Pages' sub-path hosting; it has not been checked on GitHub Pages itself.
+1. **Settings → Pages → Build and deployment → Source**: **GitHub Actions**.
+2. **Settings → Secrets and variables → Actions → Variables**: `ENABLE_PAGES` = `true`. Delete or change this variable to stop deploying. To take the site down, also unpublish it under Settings → Pages.
+
+On a private repository, GitHub Pages requires a paid GitHub plan. The workflow reads the base path from GitHub and builds for it, so it also works unchanged under a custom domain. The URL of each deployment is shown on the workflow run's *Deploy* job and in the repository's `github-pages` environment.
 
 Without Pages, `npm run build:web` produces a `dist/` folder that any static host can serve. CI also uploads it as a workflow artifact named `web-dist`; that is a downloadable build, not a deployment.
 
 ### Setting up EAS builds
 
-Nothing here is configured yet, and no Expo project ID is committed.
+The `EXPO_TOKEN` repository secret is set, but the project is not linked to an Expo project yet (no project ID is committed), so the workflow stops with a message until step 2 is done.
 
 1. Create a free account at [expo.dev](https://expo.dev) and run `npx eas-cli@latest login`.
 2. Link the project: `npx eas-cli@latest init`. This adds `extra.eas.projectId` to the app config. Commit that change.
