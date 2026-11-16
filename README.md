@@ -149,14 +149,13 @@ On a private repository, GitHub Pages requires a paid GitHub plan. The workflow 
 
 Without Pages, `npm run build:web` produces a `dist/` folder that any static host can serve. CI also uploads it as a workflow artifact named `web-dist`; that is a downloadable build, not a deployment.
 
-### Setting up EAS builds
+### EAS builds
 
-The `EXPO_TOKEN` repository secret is set, but the project is not linked to an Expo project yet (no project ID is committed), so the workflow stops with a message until step 2 is done.
+EAS is set up: the app is linked to the Expo project [`@elyesghouma/daily-habit-tracker-app`](https://expo.dev/accounts/elyesghouma/projects/daily-habit-tracker-app) (`extra.eas.projectId` in `app.json`), and the `EXPO_TOKEN` repository secret holds an Expo access token. The token itself is never committed. No build has been started yet.
 
-1. Create a free account at [expo.dev](https://expo.dev) and run `npx eas-cli@latest login`.
-2. Link the project: `npx eas-cli@latest init`. This adds `extra.eas.projectId` to the app config. Commit that change.
-3. Create a token at **expo.dev → Account settings → Access tokens** and add it to GitHub as a repository secret named `EXPO_TOKEN` (**Settings → Secrets and variables → Actions → Secrets**). Never commit the token.
-4. Run **Actions → EAS mobile build → Run workflow** and choose a platform and profile.
+To build, run **Actions → EAS mobile build → Run workflow** and choose a platform and profile, or locally `npx eas-cli@latest build --platform android --profile preview`.
+
+To set this up on a fork or another account: `npx eas-cli@latest login`, change `owner` in `app.json`, run `npx eas-cli@latest init`, then create a token at **expo.dev → Account settings → Access tokens** and save it as the repository secret `EXPO_TOKEN`.
 
 Profiles in `eas.json`: `development` (development client, internal distribution), `preview` (internal distribution, APK on Android) and `production` (store-ready, auto-incremented version). iOS builds need an Apple Developer account. The Android package and iOS bundle identifier are both `com.dailyhabittracker.app`; change them in `app.json` before publishing to a store. The workflow only starts builds, which count against your Expo plan's build quota; it never submits to the App Store or Google Play.
 

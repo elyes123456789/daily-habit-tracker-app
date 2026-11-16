@@ -51,6 +51,17 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "description": "A calm, local-first daily habit tracker."
+    "description": "A calm, local-first daily habit tracker.",
+    "owner": "elyesghouma",
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "f4a66b5d-c429-4c76-a5d7-6f56fdfee41a"
+      }
+    }
   }
 }
